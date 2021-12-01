@@ -1,0 +1,65 @@
+
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Elm
+        run: |
+          mkdir /home/runner/elm-home
+          curl -L -o elm.gz https://github.com/elm/compiler/releases/download/0.19.1/binary-for-linux-64-bit.gz
+          gunzip elm.gz
+          mv elm /home/runner/elm-home/elm
+          chmod +x /home/runner/elm-home/elm
+          
+      - name: Setup Npm
+        uses: actions/setup-node@v2.5.0
+        with:
+          node-version: '16.x'
+
+      - name: Build
+        run: |
+          npm install --global uglify-js@latest
+        
+          js="elm.js"
+          min="elm-min.js"
+          /home/runner/elm-home/elm make src/Main.elm --optimize --output=$js
+          
+          uglifyjs $js --compress 'pure_funcs=[F2,F3,F4,F5,F6,F7,F8,F9,A2,A3,A4,A5,A6,A7,A8,A9],pure_getters,keep_fargs=false,unsafe_comps,unsafe' | uglifyjs --mangle --output $min
+          
+          echo "Compiled size:$(wc $js -c) bytes  ($js)"
+          echo "Minified size:$(wc $min -c) bytes  ($min)"
+          
+          mkdir dist/
+          mv $min dist/
+
+      - name: Copy public assets
+        run: cp public/* dist/
+
+      - name: Netlify deploy
+        uses: nwtgck/actions-netlify@v1.2.2
+        with:
+          publish-dir: dist
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          production-deploy: ${{ github.event_name != 'pull_request' }} 
+          enable-pull-request-comment: true
+          enable-commit-comment: true
+          enable-commit-status: true
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        timeout-minutes: 1
+          
