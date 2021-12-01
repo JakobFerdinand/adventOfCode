@@ -6,6 +6,7 @@ import Element exposing (..)
 import Element.Font as Font
 import Element.Input as Input
 import Html exposing (Html, input)
+import Puzzles.Puzzle1 as Puzzle1
 
 
 
@@ -57,10 +58,23 @@ update : Msg -> Model -> Model
 update msg model =
     case msg of
         InputTextChanged input ->
-            { model | inputText = input }
+            { model
+                | inputText = input
+                , outputText = choosePuzzleSolution model.selectedPuzzle input
+            }
 
         SelectedPuzzleChanged puzzle ->
-            { model | selectedPuzzle = puzzle }
+            { model
+                | selectedPuzzle = puzzle
+                , outputText = choosePuzzleSolution puzzle model.inputText
+            }
+
+
+choosePuzzleSolution : Puzzle -> (String -> String)
+choosePuzzleSolution selectedPuzzle =
+    case selectedPuzzle of
+        Puzzle1 ->
+            Puzzle1.solve
 
 
 
@@ -93,7 +107,7 @@ view model =
                     , label = Input.labelHidden ""
                     , spellcheck = False
                     }
-                , el [ height fill, width <| fillPortion 1 ] <| text ""
+                , el [ height fill, width <| fillPortion 1 ] <| text model.outputText
                 ]
             ]
 
