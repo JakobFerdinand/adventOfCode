@@ -1,12 +1,13 @@
-module Main exposing (..)
+module Main exposing (main)
 
-import Array exposing (initialize)
 import Browser
 import Dict exposing (update)
 import Element exposing (..)
+import Element.Background as Background
 import Element.Font as Font
 import Element.Input as Input
 import Html exposing (Html, input)
+import Html.Attributes exposing (attribute)
 import Puzzles.Puzzle1 as Puzzle1
 import Puzzles.Puzzle2 as Puzzle2
 
@@ -31,9 +32,22 @@ type alias Model =
     }
 
 
+type alias PuzzleInfo =
+    { puzzle : Puzzle
+    , initInput : String
+    }
+
+
 type Puzzle
     = Puzzle1
     | Puzzle2
+
+
+allPuzzles : List PuzzleInfo
+allPuzzles =
+    [ PuzzleInfo Puzzle1 "199\n200\n208\n210\n200\n207\n240\n269\n260\n263"
+    , PuzzleInfo Puzzle2 "199\n200\n208\n210\n200\n207\n240\n269\n260\n263"
+    ]
 
 
 type Msg
@@ -48,11 +62,14 @@ type Msg
 init : Model
 init =
     let
+        initPuzzle_ =
+            allPuzzles |> List.drop 1 |> List.head
+
         initPuzzle =
-            Puzzle2
+            initPuzzle_ |> Maybe.map .puzzle |> Maybe.withDefault Puzzle1
 
         initInput =
-            "199\n200\n208\n210\n200\n207\n240\n269\n260\n263"
+            initPuzzle_ |> Maybe.map .initInput |> Maybe.withDefault ""
     in
     { inputText = initInput
     , outputText = choosePuzzleSolution initPuzzle initInput
@@ -107,7 +124,13 @@ view model =
             , spacing 20
             , padding 20
             ]
-            [ viewPuzzles model.selectedPuzzle
+            [ row [ width fill, alignTop ]
+                [ row [ width <| fillPortion 1, spacing 20 ]
+                    [ el [ Font.size 24, width fill ] <| text "Advent of Code 2021"
+                    , viewPuzzles [ alignRight ] model.selectedPuzzle
+                    ]
+                , el [ width <| fillPortion 1 ] none
+                ]
             , row
                 [ width fill
                 , height fill
@@ -126,14 +149,19 @@ view model =
                     , label = Input.labelHidden ""
                     , spellcheck = False
                     }
-                , el [ height fill, width <| fillPortion 1 ] <| text model.outputText
+                , column [ height fill, width <| fillPortion 1 ]
+                    [ el [ height <| fillPortion 1 ] <| text model.outputText
+                    , newTabLink [ height <| fillPortion 1, width fill, Background.image "https://github.com/JakobFerdinand/adventOfCode2021/raw/main/assets/adventOfCode.jpg" ]
+                        { url = "https://adventofcode.com/2021", label = none }
+                    ]
                 ]
             ]
 
 
-viewPuzzles selectedPuzzle =
+viewPuzzles : List (Attribute Msg) -> Puzzle -> Element Msg
+viewPuzzles attributes selectedPuzzle =
     Input.radioRow
-        [ spacing 20 ]
+        ([ spacing 20 ] ++ attributes)
         { onChange = SelectedPuzzleChanged
         , selected = Just selectedPuzzle
         , label = Input.labelHidden ""
