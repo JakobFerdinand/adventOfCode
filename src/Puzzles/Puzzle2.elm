@@ -20,7 +20,7 @@ buffer size list =
         [ list ]
 
     else
-        [ list |> List.take size ] ++ buffer size (List.drop 1 list)
+        (list |> List.take size) :: buffer size (List.drop 1 list)
 
 
 type Category

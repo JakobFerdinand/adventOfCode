@@ -7,9 +7,9 @@ import Element.Background as Background
 import Element.Font as Font
 import Element.Input as Input
 import Html exposing (Html, input)
-import Html.Attributes exposing (attribute)
 import Puzzles.Puzzle1 as Puzzle1
 import Puzzles.Puzzle2 as Puzzle2
+import Puzzles.Puzzle3 as Puzzle3
 
 
 
@@ -34,6 +34,7 @@ type alias Model =
 
 type alias PuzzleInfo =
     { puzzle : Puzzle
+    , displayText : String
     , initInput : String
     }
 
@@ -41,12 +42,14 @@ type alias PuzzleInfo =
 type Puzzle
     = Puzzle1
     | Puzzle2
+    | Puzzle3
 
 
 allPuzzles : List PuzzleInfo
 allPuzzles =
-    [ PuzzleInfo Puzzle1 "199\n200\n208\n210\n200\n207\n240\n269\n260\n263"
-    , PuzzleInfo Puzzle2 "199\n200\n208\n210\n200\n207\n240\n269\n260\n263"
+    [ PuzzleInfo Puzzle1 "Puzzle 1 - Dez 1" "199\n200\n208\n210\n200\n207\n240\n269\n260\n263"
+    , PuzzleInfo Puzzle2 "Puzzle 2 - Dez 2" "199\n200\n208\n210\n200\n207\n240\n269\n260\n263"
+    , PuzzleInfo Puzzle3 "Puzzle 3 - Dez 3" "forward 5\ndown 5\nforward 8\nup 3\ndown 8\nforward 2"
     ]
 
 
@@ -63,7 +66,7 @@ init : Model
 init =
     let
         initPuzzle_ =
-            allPuzzles |> List.drop 1 |> List.head
+            allPuzzles |> List.filter (\p -> p.puzzle == Puzzle3) |> List.head
 
         initPuzzle =
             initPuzzle_ |> Maybe.map .puzzle |> Maybe.withDefault Puzzle1
@@ -105,6 +108,9 @@ choosePuzzleSolution selectedPuzzle =
 
         Puzzle2 ->
             Puzzle2.solve
+
+        Puzzle3 ->
+            Puzzle3.solve
 
 
 
@@ -161,12 +167,14 @@ view model =
 viewPuzzles : List (Attribute Msg) -> Puzzle -> Element Msg
 viewPuzzles attributes selectedPuzzle =
     Input.radioRow
-        ([ spacing 20 ] ++ attributes)
+        (spacing 20 :: attributes)
         { onChange = SelectedPuzzleChanged
         , selected = Just selectedPuzzle
         , label = Input.labelHidden ""
-        , options =
-            [ Input.option Puzzle1 <| text "Puzzle 1 - Dez 1"
-            , Input.option Puzzle2 <| text "Puzzle 2 - Dez 1"
-            ]
+        , options = allPuzzles |> List.map puzzleInfoOption
         }
+
+
+puzzleInfoOption : PuzzleInfo -> Input.Option Puzzle msg
+puzzleInfoOption info =
+    Input.option info.puzzle <| text info.displayText
