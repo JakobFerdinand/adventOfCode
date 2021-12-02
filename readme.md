@@ -4,6 +4,6 @@
 
 In this Repository I try to follow and solve all puzzles provided by [adventOfCode](https://adventofcode.com/)
 
-The current state is deployed to [adventofcode.jakobferdinand.at](adventofcode.jakobferdinand.at)
+The current state is deployed to [adventofcode.jakobferdinand.at](https://adventofcode.jakobferdinand.at)
 
 ![](assets/adventOfCode.jpg)
