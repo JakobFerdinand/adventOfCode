@@ -10,6 +10,7 @@ import Html exposing (Html, input)
 import Puzzles.Puzzle1 as Puzzle1
 import Puzzles.Puzzle2 as Puzzle2
 import Puzzles.Puzzle3 as Puzzle3
+import Puzzles.Puzzle4 as Puzzle4
 
 
 
@@ -43,13 +44,15 @@ type Puzzle
     = Puzzle1
     | Puzzle2
     | Puzzle3
+    | Puzzle4
 
 
 allPuzzles : List PuzzleInfo
 allPuzzles =
     [ PuzzleInfo Puzzle1 "Puzzle 1 - Dez 1" "199\n200\n208\n210\n200\n207\n240\n269\n260\n263"
-    , PuzzleInfo Puzzle2 "Puzzle 2 - Dez 2" "199\n200\n208\n210\n200\n207\n240\n269\n260\n263"
-    , PuzzleInfo Puzzle3 "Puzzle 3 - Dez 3" "forward 5\ndown 5\nforward 8\nup 3\ndown 8\nforward 2"
+    , PuzzleInfo Puzzle2 "Puzzle 2 - Dez 1" "199\n200\n208\n210\n200\n207\n240\n269\n260\n263"
+    , PuzzleInfo Puzzle3 "Puzzle 3 - Dez 2" "forward 5\ndown 5\nforward 8\nup 3\ndown 8\nforward 2"
+    , PuzzleInfo Puzzle4 "Puzzle 4 - Dez 2" "forward 5\ndown 5\nforward 8\nup 3\ndown 8\nforward 2"
     ]
 
 
@@ -66,7 +69,7 @@ init : Model
 init =
     let
         initPuzzle_ =
-            allPuzzles |> List.filter (\p -> p.puzzle == Puzzle3) |> List.head
+            allPuzzles |> List.filter (\p -> p.puzzle == Puzzle4) |> List.head
 
         initPuzzle =
             initPuzzle_ |> Maybe.map .puzzle |> Maybe.withDefault Puzzle1
@@ -111,6 +114,9 @@ choosePuzzleSolution selectedPuzzle =
 
         Puzzle3 ->
             Puzzle3.solve
+
+        Puzzle4 ->
+            Puzzle4.solve
 
 
 

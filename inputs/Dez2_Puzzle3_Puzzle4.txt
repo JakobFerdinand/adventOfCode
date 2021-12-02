@@ -970,7 +970,7 @@ forward 4
 down 5
 forward 7
 forward 2
-forward 7
+forward 8
 down 7
 up 1
 forward 6

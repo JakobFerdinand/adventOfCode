@@ -1,7 +1,5 @@
 module Puzzles.Puzzle3 exposing (solve)
 
-import Html.Attributes exposing (step)
-
 
 solve : String -> String
 solve input =
