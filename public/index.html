@@ -12,6 +12,9 @@
       var app = Elm.Main.init({
         node: document.getElementById("app")
       });      
+      app.ports.copyToClipboard.subscribe(result => {
+        navigator.clipboard.writeText(result);
+      });
     </script>
 </body>
 </html>

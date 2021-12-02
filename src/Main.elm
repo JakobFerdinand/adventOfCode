@@ -1,16 +1,15 @@
-module Main exposing (main)
+port module Main exposing (main)
 
 import Browser
-import Dict exposing (update)
+import Dropdown
 import Element exposing (..)
 import Element.Background as Background
+import Element.Border as Border
+import Element.Events as Events
 import Element.Font as Font
 import Element.Input as Input
-import Html exposing (Html, input)
-import Puzzles.Puzzle1 as Puzzle1
-import Puzzles.Puzzle2 as Puzzle2
-import Puzzles.Puzzle3 as Puzzle3
-import Puzzles.Puzzle4 as Puzzle4
+import Html exposing (Html)
+import Puzzle exposing (Puzzle(..))
 
 
 
@@ -19,108 +18,171 @@ import Puzzles.Puzzle4 as Puzzle4
 
 main : Program () Model Msg
 main =
-    Browser.sandbox
+    Browser.element
         { init = init
         , view = view
         , update = update
+        , subscriptions = subscriptions
         }
 
 
 type alias Model =
     { inputText : String
     , outputText : String
-    , selectedPuzzle : Puzzle
+    , selectedPuzzle : Maybe Puzzle
+    , dropdownState : Dropdown.State Puzzle
     }
 
 
 type alias PuzzleInfo =
     { puzzle : Puzzle
-    , displayText : String
     , initInput : String
     }
 
 
-type Puzzle
-    = Puzzle1
-    | Puzzle2
-    | Puzzle3
-    | Puzzle4
-
-
-allPuzzles : List PuzzleInfo
-allPuzzles =
-    [ PuzzleInfo Puzzle1 "Puzzle 1 - Dez 1" "199\n200\n208\n210\n200\n207\n240\n269\n260\n263"
-    , PuzzleInfo Puzzle2 "Puzzle 2 - Dez 1" "199\n200\n208\n210\n200\n207\n240\n269\n260\n263"
-    , PuzzleInfo Puzzle3 "Puzzle 3 - Dez 2" "forward 5\ndown 5\nforward 8\nup 3\ndown 8\nforward 2"
-    , PuzzleInfo Puzzle4 "Puzzle 4 - Dez 2" "forward 5\ndown 5\nforward 8\nup 3\ndown 8\nforward 2"
-    ]
+dropDownConfig : Dropdown.Config Puzzle Msg Model
+dropDownConfig =
+    let
+        itemToElement isSelected isHighlighted puzzle =
+            row
+                [ Background.color colors.hover
+                , Font.color colors.green
+                , highliteMouseOver
+                , padding 5
+                ]
+                [ text ("[ " ++ Puzzle.toString puzzle ++ " ]")
+                ]
+    in
+    Dropdown.basic
+        { itemsFromModel = \_ -> Puzzle.all
+        , selectionFromModel = .selectedPuzzle
+        , dropdownMsg = Dropdown
+        , onSelectMsg = SelectedPuzzleChanged
+        , itemToPrompt =
+            \p ->
+                el
+                    [ alignRight
+                    , Font.color colors.green
+                    , highliteMouseOver
+                    ]
+                <|
+                    text ("[ " ++ Puzzle.toString p ++ " ]")
+        , itemToElement = itemToElement
+        }
+        |> Dropdown.withContainerAttributes
+            [ padding 5
+            , alignRight
+            ]
 
 
 type Msg
     = InputTextChanged String
-    | SelectedPuzzleChanged Puzzle
+    | SelectedPuzzleChanged (Maybe Puzzle)
+    | Dropdown (Dropdown.Msg Puzzle)
+    | CopyResultToClipboard
 
 
 
 -- INIT
 
 
-init : Model
-init =
+init : () -> ( Model, Cmd Msg )
+init _ =
     let
+        allPuzzleInfos : List PuzzleInfo
+        allPuzzleInfos =
+            [ PuzzleInfo Puzzle1 "199\n200\n208\n210\n200\n207\n240\n269\n260\n263"
+            , PuzzleInfo Puzzle2 "199\n200\n208\n210\n200\n207\n240\n269\n260\n263"
+            , PuzzleInfo Puzzle3 "forward 5\ndown 5\nforward 8\nup 3\ndown 8\nforward 2"
+            , PuzzleInfo Puzzle4 "forward 5\ndown 5\nforward 8\nup 3\ndown 8\nforward 2"
+            ]
+
         initPuzzle_ =
-            allPuzzles |> List.filter (\p -> p.puzzle == Puzzle4) |> List.head
+            allPuzzleInfos |> List.filter (\p -> p.puzzle == Puzzle4) |> List.head
 
         initPuzzle =
-            initPuzzle_ |> Maybe.map .puzzle |> Maybe.withDefault Puzzle1
+            initPuzzle_ |> Maybe.map .puzzle
 
         initInput =
             initPuzzle_ |> Maybe.map .initInput |> Maybe.withDefault ""
     in
-    { inputText = initInput
-    , outputText = choosePuzzleSolution initPuzzle initInput
-    , selectedPuzzle = initPuzzle
-    }
+    ( { inputText = initInput
+      , outputText = Puzzle.choosePuzzleSolution (initPuzzle |> Maybe.withDefault Puzzle1) initInput
+      , selectedPuzzle = initPuzzle
+      , dropdownState = Dropdown.init "puzzles-dropdown"
+      }
+    , Cmd.none
+    )
 
 
 
 -- UPDATE
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         InputTextChanged input ->
-            { model
+            ( { model
                 | inputText = input
-                , outputText = choosePuzzleSolution model.selectedPuzzle input
-            }
+                , outputText = Puzzle.choosePuzzleSolution (model.selectedPuzzle |> Maybe.withDefault Puzzle1) input
+              }
+            , Cmd.none
+            )
 
         SelectedPuzzleChanged puzzle ->
-            { model
+            ( { model
                 | selectedPuzzle = puzzle
-                , outputText = choosePuzzleSolution puzzle model.inputText
-            }
+                , outputText = Puzzle.choosePuzzleSolution (puzzle |> Maybe.withDefault Puzzle1) model.inputText
+              }
+            , Cmd.none
+            )
+
+        Dropdown dropdownMsg ->
+            let
+                ( updated, cmd ) =
+                    Dropdown.update dropDownConfig dropdownMsg model model.dropdownState
+            in
+            ( { model | dropdownState = updated }
+            , cmd
+            )
+
+        CopyResultToClipboard ->
+            ( model, copyToClipboard model.outputText )
 
 
-choosePuzzleSolution : Puzzle -> (String -> String)
-choosePuzzleSolution selectedPuzzle =
-    case selectedPuzzle of
-        Puzzle1 ->
-            Puzzle1.solve
 
-        Puzzle2 ->
-            Puzzle2.solve
+-- SUBSCRIPTIONS
 
-        Puzzle3 ->
-            Puzzle3.solve
 
-        Puzzle4 ->
-            Puzzle4.solve
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
+
+
+
+-- PORTS
+
+
+port copyToClipboard : String -> Cmd msg
 
 
 
 -- VIEW
+
+
+colors =
+    { foreground = rgb255 204 204 204
+    , background = rgb255 15 15 35
+    , hover = rgb255 36 36 61
+    , green = rgb255 3 171 18
+    , highlite = rgb255 105 234 147
+    }
+
+
+highliteMouseOver : Attribute msg
+highliteMouseOver =
+    mouseOver [ Font.color colors.highlite, Font.glow colors.highlite 2 ]
 
 
 view : Model -> Html Msg
@@ -128,6 +190,14 @@ view model =
     layout
         [ width fill
         , height fill
+        , Background.color colors.background
+        , Font.color colors.foreground
+        , Font.family
+            [ Font.external
+                { name = "Source Code Pro"
+                , url = "https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@300&display=swap"
+                }
+            ]
         ]
     <|
         column
@@ -137,50 +207,71 @@ view model =
             , padding 20
             ]
             [ row [ width fill, alignTop ]
-                [ row [ width <| fillPortion 1, spacing 20 ]
-                    [ el [ Font.size 24, width fill ] <| text "Advent of Code 2021"
-                    , viewPuzzles [ alignRight ] model.selectedPuzzle
-                    ]
-                , el [ width <| fillPortion 1 ] none
+                [ el [ width <| fillPortion 1 ] <| Dropdown.view dropDownConfig model model.dropdownState
+                , el [ width <| fillPortion 1 ] <|
+                    newTabLink
+                        [ Font.size 24
+                        , Font.color colors.green
+                        , highliteMouseOver
+                        , alignRight
+                        ]
+                        { url = "https://adventofcode.com/2021"
+                        , label =
+                            text "Advent of Code 2021"
+                        }
                 ]
             , row
                 [ width fill
                 , height fill
                 , spacing 20
-                , Font.family
-                    [ Font.external
-                        { name = "Source Code Pro"
-                        , url = "https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@300&display=swap"
+                ]
+                [ column
+                    [ width <| fillPortion 1
+                    , height fill
+                    , spacing 10
+                    ]
+                    [ el [] <| text "Input:"
+                    , Input.multiline
+                        [ height fill
+                        , width fill
+                        , Background.color colors.background
+                        , focused [ Border.color colors.highlite, Border.glow colors.highlite 2 ]
+                        ]
+                        { onChange = InputTextChanged
+                        , text = model.inputText
+                        , placeholder = Nothing
+                        , label = Input.labelHidden ""
+                        , spellcheck = False
                         }
                     ]
-                ]
-                [ Input.multiline [ height fill, width <| fillPortion 1 ]
-                    { onChange = InputTextChanged
-                    , text = model.inputText
-                    , placeholder = Nothing
-                    , label = Input.labelHidden ""
-                    , spellcheck = False
-                    }
-                , column [ height fill, width <| fillPortion 1 ]
-                    [ el [ height <| fillPortion 1 ] <| text model.outputText
-                    , newTabLink [ height <| fillPortion 1, width fill, Background.image "https://github.com/JakobFerdinand/adventOfCode2021/raw/main/assets/adventOfCode.jpg" ]
-                        { url = "https://adventofcode.com/2021", label = none }
+                , column
+                    [ height fill
+                    , width <| fillPortion 1
+                    , spacing 10
+                    ]
+                    [ el [] <| text "Result:"
+                    , row
+                        [ width fill
+                        , spacing 20
+                        ]
+                        [ el
+                            [ width fill
+                            , padding 11
+                            , Border.width 1
+                            , Border.rounded 3
+                            ]
+                          <|
+                            text model.outputText
+                        , el
+                            [ Font.color colors.green
+                            , highliteMouseOver
+                            , Events.onClick CopyResultToClipboard
+                            ]
+                          <|
+                            text "[ copy ]"
+                        ]
+                    , image [ alignBottom, width fill ]
+                        { src = "https://github.com/JakobFerdinand/adventOfCode2021/raw/main/assets/adventOfCode.jpg", description = "" }
                     ]
                 ]
             ]
-
-
-viewPuzzles : List (Attribute Msg) -> Puzzle -> Element Msg
-viewPuzzles attributes selectedPuzzle =
-    Input.radioRow
-        (spacing 20 :: attributes)
-        { onChange = SelectedPuzzleChanged
-        , selected = Just selectedPuzzle
-        , label = Input.labelHidden ""
-        , options = allPuzzles |> List.map puzzleInfoOption
-        }
-
-
-puzzleInfoOption : PuzzleInfo -> Input.Option Puzzle msg
-puzzleInfoOption info =
-    Input.option info.puzzle <| text info.displayText
