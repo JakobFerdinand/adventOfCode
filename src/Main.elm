@@ -61,10 +61,11 @@ init _ =
             , PuzzleInfo Puzzle3 "forward 5\ndown 5\nforward 8\nup 3\ndown 8\nforward 2"
             , PuzzleInfo Puzzle4 "forward 5\ndown 5\nforward 8\nup 3\ndown 8\nforward 2"
             , PuzzleInfo Puzzle5 "00100\n11110\n10110\n10111\n10101\n01111\n00111\n11100\n10000\n11001\n00010\n01010"
+            , PuzzleInfo Puzzle6 "00100\n11110\n10110\n10111\n10101\n01111\n00111\n11100\n10000\n11001\n00010\n01010"
             ]
 
         initPuzzle_ =
-            allPuzzleInfos |> List.filter (\p -> p.puzzle == Puzzle5) |> List.head
+            allPuzzleInfos |> List.filter (\p -> p.puzzle == Puzzle6) |> List.head
 
         initPuzzle =
             initPuzzle_ |> Maybe.map .puzzle

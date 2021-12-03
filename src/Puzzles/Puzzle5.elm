@@ -1,7 +1,6 @@
 module Puzzles.Puzzle5 exposing (solve)
 
 import Binary
-import Html.Attributes exposing (value)
 import List.Extra as ListE
 
 
@@ -40,8 +39,8 @@ countOffBits bits =
 calculateRate : (List Int -> Int) -> List (List String) -> Int
 calculateRate discriminator values =
     values
-        |> ListE.transpose
         |> List.map parse
+        |> ListE.transpose
         |> List.map discriminator
         |> Binary.fromIntegers
         |> Binary.toDecimal
