@@ -8,7 +8,7 @@ import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import Element.Input as Input
-import Html exposing (Html)
+import Html exposing (Html, input)
 import Puzzle exposing (Puzzle(..))
 
 
@@ -34,17 +34,12 @@ type alias Model =
     }
 
 
-type alias PuzzleInfo =
-    { puzzle : Puzzle
-    , initInput : String
-    }
-
-
 type Msg
     = InputTextChanged String
     | SelectedPuzzleChanged (Maybe Puzzle)
     | Dropdown (Dropdown.Msg Puzzle)
     | CopyResultToClipboard
+    | InsertSampleInput
 
 
 
@@ -54,28 +49,12 @@ type Msg
 init : () -> ( Model, Cmd Msg )
 init _ =
     let
-        allPuzzleInfos : List PuzzleInfo
-        allPuzzleInfos =
-            [ PuzzleInfo Puzzle1 "199\n200\n208\n210\n200\n207\n240\n269\n260\n263"
-            , PuzzleInfo Puzzle2 "199\n200\n208\n210\n200\n207\n240\n269\n260\n263"
-            , PuzzleInfo Puzzle3 "forward 5\ndown 5\nforward 8\nup 3\ndown 8\nforward 2"
-            , PuzzleInfo Puzzle4 "forward 5\ndown 5\nforward 8\nup 3\ndown 8\nforward 2"
-            , PuzzleInfo Puzzle5 "00100\n11110\n10110\n10111\n10101\n01111\n00111\n11100\n10000\n11001\n00010\n01010"
-            , PuzzleInfo Puzzle6 "00100\n11110\n10110\n10111\n10101\n01111\n00111\n11100\n10000\n11001\n00010\n01010"
-            ]
-
-        initPuzzle_ =
-            allPuzzleInfos |> List.filter (\p -> p.puzzle == Puzzle6) |> List.head
-
         initPuzzle =
-            initPuzzle_ |> Maybe.map .puzzle
-
-        initInput =
-            initPuzzle_ |> Maybe.map .initInput |> Maybe.withDefault ""
+            Puzzle6
     in
-    ( { inputText = initInput
-      , outputText = Puzzle.choosePuzzleSolution (initPuzzle |> Maybe.withDefault Puzzle1) initInput
-      , selectedPuzzle = initPuzzle
+    ( { inputText = Puzzle.sampleData initPuzzle
+      , outputText = Puzzle.choosePuzzleSolution initPuzzle (Puzzle.sampleData initPuzzle)
+      , selectedPuzzle = Just initPuzzle
       , dropdownState = Dropdown.init "puzzles-dropdown"
       }
     , Cmd.none
@@ -88,12 +67,16 @@ init _ =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        InputTextChanged input ->
-            ( { model
+    let
+        updateModel input =
+            { model
                 | inputText = input
                 , outputText = Puzzle.choosePuzzleSolution (model.selectedPuzzle |> Maybe.withDefault Puzzle1) input
-              }
+            }
+    in
+    case msg of
+        InputTextChanged input ->
+            ( updateModel input
             , Cmd.none
             )
 
@@ -116,6 +99,16 @@ update msg model =
 
         CopyResultToClipboard ->
             ( model, copyToClipboard model.outputText )
+
+        InsertSampleInput ->
+            ( case model.selectedPuzzle of
+                Just puzzle ->
+                    updateModel (Puzzle.sampleData puzzle)
+
+                Nothing ->
+                    model
+            , Cmd.none
+            )
 
 
 
@@ -244,6 +237,7 @@ view model =
                     ]
                     [ row [ width fill ]
                         [ el [] <| text "Input:"
+                        , el [ alignRight, Font.color colors.green, highliteMouseOver, Events.onClick InsertSampleInput ] <| text "[ insert sample ]"
                         ]
                     , Input.multiline
                         [ height fill
