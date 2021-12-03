@@ -40,41 +40,6 @@ type alias PuzzleInfo =
     }
 
 
-dropDownConfig : Dropdown.Config Puzzle Msg Model
-dropDownConfig =
-    let
-        itemToElement isSelected isHighlighted puzzle =
-            row
-                [ Background.color colors.hover
-                , Font.color colors.green
-                , highliteMouseOver
-                , padding 5
-                ]
-                [ text ("[ " ++ Puzzle.toString puzzle ++ " ]")
-                ]
-    in
-    Dropdown.basic
-        { itemsFromModel = \_ -> Puzzle.all
-        , selectionFromModel = .selectedPuzzle
-        , dropdownMsg = Dropdown
-        , onSelectMsg = SelectedPuzzleChanged
-        , itemToPrompt =
-            \p ->
-                el
-                    [ alignRight
-                    , Font.color colors.green
-                    , highliteMouseOver
-                    ]
-                <|
-                    text ("[ " ++ Puzzle.toString p ++ " ]")
-        , itemToElement = itemToElement
-        }
-        |> Dropdown.withContainerAttributes
-            [ padding 5
-            , alignRight
-            ]
-
-
 type Msg
     = InputTextChanged String
     | SelectedPuzzleChanged (Maybe Puzzle)
@@ -95,10 +60,11 @@ init _ =
             , PuzzleInfo Puzzle2 "199\n200\n208\n210\n200\n207\n240\n269\n260\n263"
             , PuzzleInfo Puzzle3 "forward 5\ndown 5\nforward 8\nup 3\ndown 8\nforward 2"
             , PuzzleInfo Puzzle4 "forward 5\ndown 5\nforward 8\nup 3\ndown 8\nforward 2"
+            , PuzzleInfo Puzzle5 "00100\n11110\n10110\n10111\n10101\n01111\n00111\n11100\n10000\n11001\n00010\n01010"
             ]
 
         initPuzzle_ =
-            allPuzzleInfos |> List.filter (\p -> p.puzzle == Puzzle4) |> List.head
+            allPuzzleInfos |> List.filter (\p -> p.puzzle == Puzzle5) |> List.head
 
         initPuzzle =
             initPuzzle_ |> Maybe.map .puzzle
@@ -183,6 +149,41 @@ colors =
 highliteMouseOver : Attribute msg
 highliteMouseOver =
     mouseOver [ Font.color colors.highlite, Font.glow colors.highlite 2 ]
+
+
+dropDownConfig : Dropdown.Config Puzzle Msg Model
+dropDownConfig =
+    let
+        itemToElement isSelected isHighlighted puzzle =
+            row
+                [ Background.color colors.hover
+                , Font.color colors.green
+                , highliteMouseOver
+                , padding 5
+                ]
+                [ text ("[ " ++ Puzzle.toString puzzle ++ " ]")
+                ]
+    in
+    Dropdown.basic
+        { itemsFromModel = \_ -> Puzzle.all
+        , selectionFromModel = .selectedPuzzle
+        , dropdownMsg = Dropdown
+        , onSelectMsg = SelectedPuzzleChanged
+        , itemToPrompt =
+            \p ->
+                el
+                    [ alignRight
+                    , Font.color colors.green
+                    , highliteMouseOver
+                    ]
+                <|
+                    text ("[ " ++ Puzzle.toString p ++ " ]")
+        , itemToElement = itemToElement
+        }
+        |> Dropdown.withContainerAttributes
+            [ padding 5
+            , alignRight
+            ]
 
 
 view : Model -> Html Msg
