@@ -208,10 +208,19 @@ view model =
             , spacing 20
             , padding 20
             ]
-            [ row [ width fill, alignTop ]
+            [ row [ width fill, alignTop, spacing 20 ]
                 [ el [ width <| fillPortion 1 ] <| Dropdown.view dropDownConfig model model.dropdownState
-                , el [ width <| fillPortion 1 ] <|
-                    newTabLink
+                , row [ width <| fillPortion 1, spacing 20 ]
+                    [ newTabLink
+                        [ Font.color colors.green
+                        , highliteMouseOver
+                        , alignRight
+                        ]
+                        { url = "https://github.com/JakobFerdinand/adventOfCode2021"
+                        , label =
+                            text "[ github ]"
+                        }
+                    , newTabLink
                         [ Font.size 24
                         , Font.color colors.green
                         , highliteMouseOver
@@ -221,6 +230,7 @@ view model =
                         , label =
                             text "Advent of Code 2021"
                         }
+                    ]
                 ]
             , row
                 [ width fill
@@ -232,7 +242,9 @@ view model =
                     , height fill
                     , spacing 10
                     ]
-                    [ el [] <| text "Input:"
+                    [ row [ width fill ]
+                        [ el [] <| text "Input:"
+                        ]
                     , Input.multiline
                         [ height fill
                         , width fill
