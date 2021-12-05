@@ -5,30 +5,48 @@ import List.Extra as ListE
 
 solve : String -> String
 solve input =
-    let
-        allPoints =
-            input
-                |> String.split "\n"
-                |> List.map (String.split " -> ")
-                |> List.filterMap prepareVector
-                |> List.filterMap parseVector
-                |> List.filter xOrYEqual
-                |> List.map expand
-                |> List.concat
-
-        existsAtLeast2Times : Point -> Bool
-        existsAtLeast2Times point =
-            (allPoints
-                |> List.filter (\p -> p == point)
-                |> List.length
-            )
-                >= 2
-    in
-    allPoints
-        |> ListE.unique
-        |> List.filter existsAtLeast2Times
+    input
+        |> String.split "\n"
+        |> List.map (String.split " -> ")
+        |> List.filterMap prepareVector
+        |> List.filterMap parseVector
+        |> List.filter xOrYEqual
+        |> process []
+        |> List.filter (\p -> p.counter >= 2)
         |> List.length
         |> String.fromInt
+
+
+type alias PointCounter =
+    { counter : Int
+    , point : Point
+    }
+
+
+process : List PointCounter -> List Vector -> List PointCounter
+process knownPointCounters vectors =
+    case vectors |> List.head of
+        Just vector ->
+            let
+                points =
+                    vector |> expand
+
+                existingPoints =
+                    points |> List.filter (\p -> (knownPointCounters |> List.filter (\kp -> kp.point == p) |> List.length) /= 0)
+
+                notExistingProjects =
+                    points |> List.filter (\p -> (knownPointCounters |> List.filter (\kp -> kp.point == p) |> List.length) == 0)
+
+                updatedPoints =
+                    knownPointCounters
+                        |> ListE.updateIf (\kp -> existingPoints |> List.member kp.point) (\kp -> { kp | counter = kp.counter + 1 })
+            in
+            process
+                (updatedPoints ++ (notExistingProjects |> List.map (PointCounter 1)))
+                (vectors |> List.drop 1)
+
+        Nothing ->
+            knownPointCounters
 
 
 xOrYEqual : Vector -> Bool
