@@ -239,18 +239,29 @@ view model =
                         [ el [] <| text "Input:"
                         , el [ alignRight, Font.color colors.green, highliteMouseOver, Events.onClick InsertSampleInput ] <| text "[ insert sample ]"
                         ]
-                    , Input.multiline
+                    , el
                         [ height fill
                         , width fill
-                        , Background.color colors.background
+                        , Border.width 1
+                        , Border.rounded 3
+
+                        --, Border.color colors.green
                         , focused [ Border.color colors.highlite, Border.glow colors.highlite 2 ]
+                        , scrollbars
                         ]
-                        { onChange = InputTextChanged
-                        , text = model.inputText
-                        , placeholder = Nothing
-                        , label = Input.labelHidden ""
-                        , spellcheck = False
-                        }
+                      <|
+                        Input.multiline
+                            [ height fill
+                            , width fill
+                            , Border.width 0
+                            , Background.color colors.background
+                            ]
+                            { onChange = InputTextChanged
+                            , text = model.inputText
+                            , placeholder = Nothing
+                            , label = Input.labelHidden ""
+                            , spellcheck = False
+                            }
                     ]
                 , column
                     [ height fill
