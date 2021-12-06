@@ -1,6 +1,7 @@
 module Puzzle exposing (..)
 
 import Puzzles.Puzzle1 as Puzzle1
+import Puzzles.Puzzle11 as Puzzle11
 import Puzzles.Puzzle2 as Puzzle2
 import Puzzles.Puzzle3 as Puzzle3
 import Puzzles.Puzzle4 as Puzzle4
@@ -21,6 +22,7 @@ type Puzzle
     | Puzzle7
     | Puzzle8
     | Puzzle9
+    | Puzzle11
 
 
 all : List Puzzle
@@ -34,6 +36,7 @@ all =
     , Puzzle7
     , Puzzle8
     , Puzzle9
+    , Puzzle11
     ]
 
 
@@ -67,6 +70,9 @@ toString puzzle =
         Puzzle9 ->
             "Puzzle 9"
 
+        Puzzle11 ->
+            "Puzzle 11"
+
 
 choosePuzzleSolution : Puzzle -> (String -> String)
 choosePuzzleSolution puzzle =
@@ -98,6 +104,9 @@ choosePuzzleSolution puzzle =
         Puzzle9 ->
             Puzzle9.solve
 
+        Puzzle11 ->
+            Puzzle11.solve
+
 
 sampleData : Puzzle -> String
 sampleData puzzle =
@@ -128,3 +137,6 @@ sampleData puzzle =
 
         Puzzle9 ->
             "0,9 -> 5,9\n8,0 -> 0,8\n9,4 -> 3,4\n2,2 -> 2,1\n7,0 -> 7,4\n6,4 -> 2,0\n0,9 -> 2,9\n3,4 -> 1,4\n0,0 -> 8,8\n5,5 -> 8,2"
+
+        Puzzle11 ->
+            "3,4,3,1,2"
