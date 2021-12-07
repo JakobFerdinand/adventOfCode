@@ -7,7 +7,6 @@ module Puzzles.Puzzle12 exposing (solve)
 
 import Dict exposing (Dict)
 import Dict.Extra
-import Html exposing (option)
 
 
 solve : String -> String
