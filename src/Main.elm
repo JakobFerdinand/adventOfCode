@@ -50,7 +50,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     let
         initPuzzle =
-            Puzzle13
+            Puzzle14
     in
     ( { inputText = Puzzle.sampleData initPuzzle
       , outputText = Puzzle.choosePuzzleSolution initPuzzle (Puzzle.sampleData initPuzzle)

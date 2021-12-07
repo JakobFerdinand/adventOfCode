@@ -4,6 +4,7 @@ import Puzzles.Puzzle1 as Puzzle1
 import Puzzles.Puzzle11 as Puzzle11
 import Puzzles.Puzzle12 as Puzzle12
 import Puzzles.Puzzle13 as Puzzle13
+import Puzzles.Puzzle14 as Puzzle14
 import Puzzles.Puzzle2 as Puzzle2
 import Puzzles.Puzzle3 as Puzzle3
 import Puzzles.Puzzle4 as Puzzle4
@@ -27,6 +28,7 @@ type Puzzle
     | Puzzle11
     | Puzzle12
     | Puzzle13
+    | Puzzle14
 
 
 all : List Puzzle
@@ -43,6 +45,7 @@ all =
     , Puzzle11
     , Puzzle12
     , Puzzle13
+    , Puzzle14
     ]
 
 
@@ -85,6 +88,9 @@ toString puzzle =
         Puzzle13 ->
             "Puzzle 13"
 
+        Puzzle14 ->
+            "Puzzle 14"
+
 
 choosePuzzleSolution : Puzzle -> (String -> String)
 choosePuzzleSolution puzzle =
@@ -125,6 +131,9 @@ choosePuzzleSolution puzzle =
         Puzzle13 ->
             Puzzle13.solve
 
+        Puzzle14 ->
+            Puzzle14.solve
+
 
 sampleData : Puzzle -> String
 sampleData puzzle =
@@ -163,4 +172,7 @@ sampleData puzzle =
             "3,4,3,1,2"
 
         Puzzle13 ->
+            "16,1,2,0,4,2,7,1,2,14"
+
+        Puzzle14 ->
             "16,1,2,0,4,2,7,1,2,14"
