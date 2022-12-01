@@ -1,0 +1,9 @@
+{
+    "name": "advent-of-code",
+    "scripts" :{
+        "start": "elm-live src/Main.elm --dir public --pushstate --open --verbose -- --output public/elm-min.js"
+    },
+    "devDependencies": {
+        "elm-live" : "^4.0.2"
+    }
+}
